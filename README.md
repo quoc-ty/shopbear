@@ -1,2 +1,4 @@
 # shopbear
-My personal project, I taking about Food Delivery
+
+This is my personal project; I will be working in the food delivery service industry.
+

@@ -1,9 +1,6 @@
 package com.shopbear.auth.controller;
 
-import com.shopbear.auth.dto.RefreshRequest;
-import com.shopbear.auth.dto.RefreshResponse;
-import com.shopbear.auth.dto.RegisterRequest;
-import com.shopbear.auth.dto.RegisterResponse;
+import com.shopbear.auth.dto.*;
 import com.shopbear.auth.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +29,10 @@ public class AuthController {
                 request.getRefreshToken()
         ); // Gửi Refresh Token xuống Service để kiểm tra và rotation.
     }
+    @PostMapping("/login")
+    public LoginResponse login(@Valid @RequestBody LoginRequest request){
 
+        return authService.login(request);
+    }
 }
 

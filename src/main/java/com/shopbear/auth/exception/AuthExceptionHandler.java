@@ -12,9 +12,21 @@ public class AuthExceptionHandler {
     @ExceptionHandler(EmailAlreadyExistsException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleEmailAlreadyExists(EmailAlreadyExistsException exception){
-        return new ErrorResponse("EMAIL_ALREADY_EXIST", exception.getMessage());
+        return new ErrorResponse("EMAIL_ALREADY_EXISTS", exception.getMessage());
     }
-    public record ErrorResponse(String code, String messege){
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ErrorResponse handleInvalidCredentials(
+            InvalidCredentialsException exception) {
+
+        return new ErrorResponse(
+                "INVALID_CREDENTIALS",
+                exception.getMessage()
+        );
+    }
+
+    public record ErrorResponse(String code, String message){
 
     }
 }

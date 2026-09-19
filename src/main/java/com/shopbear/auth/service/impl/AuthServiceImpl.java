@@ -1,10 +1,9 @@
 package com.shopbear.auth.service.impl;
 
 import com.shopbear.auth.config.AuthProperties;
-import com.shopbear.auth.dto.RefreshResponse;
-import com.shopbear.auth.dto.RegisterRequest;
-import com.shopbear.auth.dto.RegisterResponse;
+import com.shopbear.auth.dto.*;
 import com.shopbear.auth.exception.EmailAlreadyExistsException;
+import com.shopbear.auth.exception.InvalidCredentialsException;
 import com.shopbear.auth.service.AuthService;
 import com.shopbear.auth.service.EmailNormalizer;
 import com.shopbear.customer.entity.Customer;
@@ -20,6 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -36,6 +36,7 @@ public class AuthServiceImpl implements AuthService {
     private final JwtTokenService jwtTokenService;
     private final TokenHasher tokenHasher; // Dùng để hash Refresh Token bằng SHA-256.
     private final AuthProperties authProperties; // Đọc các cấu hình liên quan đến authentication.
+
     @Override
     @Transactional
     public RegisterResponse register(RegisterRequest request) {
@@ -193,6 +194,48 @@ public class AuthServiceImpl implements AuthService {
                 newAccessToken,
                 newRefreshToken
         );
+    }
+
+    @Override
+    public LoginResponse login(LoginRequest request) {
+
+        String normalizedEmail = emailNormalizer.normalize(request.getEmail());
+        Credential credential =
+                credentialRepository.findByProviderAndIdentifier(
+                        CredentialProvider.PASSWORD,
+                        normalizedEmail).orElseThrow(
+                                ()->new InvalidCredentialsException("Invalid credentials")
+                );
+
+        if(!passwordEncoder.matches(request.getPassword(), credential.getSecretHash())){
+
+            throw new InvalidCredentialsException("Invalid credentials"
+            );
+        }
+
+        Identity identity = credential.getIdentity();
+        if (identity.getStatus() != IdentityStatus.ACTIVE) {
+            throw new InvalidCredentialsException(
+                    "Invalid credentials"
+            );
+        }
+
+        String accessToken = jwtTokenService.generateAccessToken(identity.getId(), identity.getType());
+
+        String refeshToken = jwtTokenService.generateRefreshToken(identity.getId());
+        String refreshTokenHash = tokenHasher.hash(refeshToken);
+
+        LocalDateTime now = LocalDateTime.now();
+
+        AuthSession authSession = new AuthSession();
+        authSession.setIdentity(identity);
+        authSession.setRefreshTokenHash(refreshTokenHash);
+        authSession.setLastActivityAt(now);
+        authSession.setCreatedAt(now);
+
+        authSessionRepository.save(authSession);
+
+        return new LoginResponse(accessToken,refeshToken);
     }
 
 

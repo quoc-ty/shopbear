@@ -15,6 +15,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/auth/register",
+                                "/auth/login",
                                 "/auth/refresh"
                         )
                         .permitAll() // Cho phép đăng ký không cần đăng nhập.

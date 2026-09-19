@@ -12,7 +12,7 @@ public class AuthExceptionHandler {
     @ExceptionHandler(EmailAlreadyExistsException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleEmailAlreadyExists(EmailAlreadyExistsException exception){
-        return new ErrorResponse("EMAIL_ALREADY_EXISTS", exception.getMessage());
+        return new ErrorResponse("REGISTRATION_FAILED", exception.getMessage());
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)

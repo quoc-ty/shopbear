@@ -53,7 +53,7 @@ public class AuthServiceImpl implements AuthService {
                 );
 
         if (existingCredential.isPresent()) {
-            throw new EmailAlreadyExistsException("Email already exists");
+            throw new EmailAlreadyExistsException("Unable to complete registration");
         }
 
         // 3. Tạo Identity cho Customer.
@@ -120,7 +120,6 @@ public class AuthServiceImpl implements AuthService {
                 refreshToken
         );
     }
-
 
     @Override
     public RefreshResponse refresh(String refreshToken) {
@@ -204,19 +203,19 @@ public class AuthServiceImpl implements AuthService {
                 credentialRepository.findByProviderAndIdentifier(
                         CredentialProvider.PASSWORD,
                         normalizedEmail).orElseThrow(
-                                ()->new InvalidCredentialsException("Invalid credentials")
+                                ()->new InvalidCredentialsException("Email or password is incorrect")
                 );
 
         if(!passwordEncoder.matches(request.getPassword(), credential.getSecretHash())){
 
-            throw new InvalidCredentialsException("Invalid credentials"
+            throw new InvalidCredentialsException("Email or password is incorrect"
             );
         }
 
         Identity identity = credential.getIdentity();
         if (identity.getStatus() != IdentityStatus.ACTIVE) {
             throw new InvalidCredentialsException(
-                    "Invalid credentials"
+                    "Email or password is incorrect"
             );
         }
 
